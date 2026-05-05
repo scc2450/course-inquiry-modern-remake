@@ -36,6 +36,7 @@ class CourseItem(BaseModel):
     term: str = ""
     scheduleType: str = ""
     departmentId: str = ""
+    departmentName: str = ""
 
 
 class CourseSearchResponse(BaseModel):

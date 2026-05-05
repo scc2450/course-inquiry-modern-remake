@@ -22,6 +22,7 @@ def test_offline_search_uses_sample_data(tmp_path: Path) -> None:
 
     assert result.total == 1
     assert result.items[0].courseName == "贝叶斯理论"
+    assert result.items[0].departmentName == "数学科学学院"
 
 
 def test_metadata_contains_facets(tmp_path: Path) -> None:
@@ -44,3 +45,5 @@ def test_metadata_contains_facets(tmp_path: Path) -> None:
     assert meta.defaultAcademicYear == "24-25"
     assert meta.defaultTerm == "2"
     assert any(option.id == "YJSKB" for option in meta.scheduleTypes)
+    assert any(option.id == "00004" and option.name == "物理学院" for option in meta.departments)
+    assert any(option.id == "00232" and option.name == "材料科学与工程学院" for option in meta.departments)

@@ -29,9 +29,39 @@ const TERM_LABELS: Record<string, string> = {
   "3": "暑校",
 };
 
+interface YearGroup {
+  id: string;
+  name: string;
+  years: string[];
+}
+
 function optionLabel(option: Option): string {
   if (option.id === "all") return option.name;
   return option.name === option.id ? option.id : `${option.name} · ${option.id}`;
+}
+
+function parseAcademicYearStart(value: string): number {
+  const start = Number(value.split("-", 1)[0]);
+  if (Number.isNaN(start)) return -1;
+  return start >= 80 ? 1900 + start : 2000 + start;
+}
+
+function groupAcademicYears(years: string[]): YearGroup[] {
+  const grouped = new Map<string, string[]>();
+  years.forEach((year) => {
+    const start = parseAcademicYearStart(year);
+    if (start < 0) return;
+    const decade = Math.floor(start / 10) * 10;
+    const key = String(decade);
+    grouped.set(key, [...(grouped.get(key) ?? []), year]);
+  });
+  return [...grouped.entries()]
+    .sort(([left], [right]) => Number(right) - Number(left))
+    .map(([decade, groupYears]) => ({ id: decade, name: `${decade}年代`, years: groupYears }));
+}
+
+function groupForYear(year: string, groups: YearGroup[]): string {
+  return groups.find((group) => group.years.includes(year))?.id ?? groups[0]?.id ?? "";
 }
 
 function SelectField({
@@ -39,11 +69,13 @@ function SelectField({
   value,
   options,
   onChange,
+  formatOption = optionLabel,
 }: {
   label: string;
   value: string;
   options: Option[];
   onChange: (value: string) => void;
+  formatOption?: (option: Option) => string;
 }) {
   return (
     <label className="field">
@@ -51,7 +83,7 @@ function SelectField({
       <select value={value} onChange={(event) => onChange(event.target.value)}>
         {options.map((option) => (
           <option key={option.id} value={option.id}>
-            {optionLabel(option)}
+            {formatOption(option)}
           </option>
         ))}
       </select>
@@ -88,15 +120,21 @@ function AcademicYearField({
   onChange: (value: string) => void;
 }) {
   const years = options.map((option) => option.id).filter((id) => id !== "all");
-  const selectedIndex = years.indexOf(value);
-  const activeIndex = selectedIndex >= 0 ? selectedIndex : 0;
+  const groups = useMemo(() => groupAcademicYears(years), [years]);
+  const selectedGroupId = groupForYear(value, groups);
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeGroupId, setActiveGroupId] = useState(selectedGroupId);
   const selectedLabel = value === "all" ? "全部学年" : value;
-  const canStepOlder = activeIndex < years.length - 1;
-  const canStepNewer = activeIndex > 0;
+  const selectedGroup = groups.find((group) => group.id === selectedGroupId);
+  const activeGroup = groups.find((group) => group.id === activeGroupId) ?? groups[0];
 
-  const pickByIndex = (index: number) => {
-    const nextYear = years[index];
-    if (nextYear) onChange(nextYear);
+  useEffect(() => {
+    if (selectedGroupId) setActiveGroupId(selectedGroupId);
+  }, [selectedGroupId]);
+
+  const pickYear = (nextYear: string) => {
+    onChange(nextYear);
+    setIsOpen(false);
   };
 
   return (
@@ -106,39 +144,53 @@ function AcademicYearField({
         <button
           type="button"
           className={value === "all" ? "yearAll active" : "yearAll"}
-          onClick={() => onChange("all")}
+          onClick={() => {
+            onChange("all");
+            setIsOpen(false);
+          }}
         >
           全部
         </button>
-        <div className="yearStepper">
-          <button
-            type="button"
-            aria-label="选择更早学年"
-            disabled={!canStepOlder}
-            onClick={() => pickByIndex(activeIndex + 1)}
-          >
-            ‹
-          </button>
+        <button
+          type="button"
+          className="yearTrigger"
+          aria-expanded={isOpen}
+          aria-controls="academic-year-panel"
+          onClick={() => setIsOpen((open) => !open)}
+        >
           <strong>{selectedLabel}</strong>
-          <button
-            type="button"
-            aria-label="选择更新学年"
-            disabled={!canStepNewer}
-            onClick={() => pickByIndex(activeIndex - 1)}
-          >
-            ›
-          </button>
-        </div>
-        <input
-          aria-label="学年快速选择"
-          className="yearRange"
-          type="range"
-          min="0"
-          max={Math.max(years.length - 1, 0)}
-          step="1"
-          value={activeIndex}
-          onChange={(event) => pickByIndex(Number(event.target.value))}
-        />
+          <span>{value === "all" ? "不限范围" : `${selectedGroup?.name ?? ""}`}</span>
+        </button>
+        {isOpen ? (
+          <div className="yearPanel" id="academic-year-panel">
+            <div className="yearGroupTabs" role="tablist" aria-label="学年年代">
+              {groups.map((group) => (
+                <button
+                  key={group.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={group.id === activeGroup?.id}
+                  className={group.id === activeGroup?.id ? "active" : ""}
+                  onClick={() => setActiveGroupId(group.id)}
+                >
+                  {group.name}
+                </button>
+              ))}
+            </div>
+            <div className="yearGrid">
+              {activeGroup?.years.map((year) => (
+                <button
+                  key={year}
+                  type="button"
+                  className={value === year ? "active" : ""}
+                  onClick={() => pickYear(year)}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -227,7 +279,7 @@ function CourseTable({ rows }: { rows: CourseItem[] }) {
               <td>{course.teacher || "-"}</td>
               <td>{course.scheduleTime || "-"}</td>
               <td>{course.scheduleWeek || "-"}</td>
-              <td>{course.departmentId || "-"}</td>
+              <td>{course.departmentName || course.departmentId || "-"}</td>
               <td>
                 {course.url ? (
                   <a className="iconLink" href={course.url} target="_blank" rel="noreferrer" title="打开课程详情">
@@ -388,6 +440,7 @@ export function App() {
           value={filters.department_id}
           options={meta?.departments ?? [{ id: "all", name: "全部" }]}
           onChange={(value) => update("department_id", value)}
+          formatOption={(option) => option.name}
         />
         <div className="actions">
           <button className="primary" type="submit" disabled={loading}>

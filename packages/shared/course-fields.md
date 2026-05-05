@@ -16,3 +16,4 @@ The API returns normalized course rows with these stable keys:
 - `term`: term code `1`, `2`, or `3`
 - `scheduleType`: `BKSKB` or `YJSKB`
 - `departmentId`: source department code
+- `departmentName`: normalized department name when a known mapping exists

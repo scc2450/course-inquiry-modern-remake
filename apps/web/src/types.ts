@@ -32,6 +32,7 @@ export interface CourseItem {
   term: string;
   scheduleType: string;
   departmentId: string;
+  departmentName: string;
 }
 
 export interface CourseSearchResponse {

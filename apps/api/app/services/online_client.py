@@ -8,6 +8,7 @@ from fastapi import HTTPException
 
 from ..config import Settings
 from ..models import CourseItem, CourseSearchParams, CourseSearchResponse
+from .departments import department_name
 
 
 TARGET = "https://dean.pku.edu.cn/service/web/courseSearch_do.php"
@@ -73,6 +74,7 @@ def _to_course_item(raw: dict, params: CourseSearchParams) -> CourseItem:
         term=params.term or "",
         scheduleType="BKSKB",
         departmentId=params.department_id or "",
+        departmentName=department_name(params.department_id or ""),
     )
 
 

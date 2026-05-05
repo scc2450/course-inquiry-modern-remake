@@ -9,6 +9,7 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 from ..config import Settings
 from ..models import CourseItem, CourseSearchParams, CourseSearchResponse, MetaResponse, Option
+from .departments import department_name, department_options
 from .ingest import build_database
 
 
@@ -97,6 +98,7 @@ def _where(params: CourseSearchParams) -> Tuple[str, List[object]]:
 
 def _to_item(row: sqlite3.Row) -> CourseItem:
     payload = {api_name: row[db_name] for db_name, api_name in FIELD_MAP.items()}
+    payload["departmentName"] = department_name(payload["departmentId"])
     return CourseItem(**payload)
 
 
@@ -210,7 +212,7 @@ def metadata(settings: Settings) -> MetaResponse:
         terms=terms,
         scheduleTypes=_options(schedule_types, SCHEDULE_LABELS),
         courseTypes=_options(course_types),
-        departments=_options(department_ids),
+        departments=department_options(department_ids),
         onlineCourseTypes=[
             Option(id="0", name="全部"),
             Option(id="1-08", name="思政必修"),
