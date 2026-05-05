@@ -164,8 +164,8 @@ export function App() {
         setMeta(nextMeta);
         setFilters((current) => ({
           ...current,
-          academic_year: nextMeta.academicYears[0] ?? "all",
-          term: nextMeta.terms.includes("2") ? "2" : nextMeta.terms[0] ?? "all",
+          academic_year: nextMeta.defaultAcademicYear ?? nextMeta.academicYears[0] ?? "all",
+          term: nextMeta.defaultTerm ?? (nextMeta.terms.includes("2") ? "2" : nextMeta.terms[0] ?? "all"),
         }));
       })
       .catch((nextError: Error) => setError(nextError.message));
@@ -262,8 +262,18 @@ export function App() {
           placeholder="教师姓名"
           onChange={(value) => update("teacher", value)}
         />
-        <SelectField label="学年" value={filters.academic_year} options={yearOptions} onChange={(value) => update("academic_year", value)} />
-        <SelectField label="学期" value={filters.term} options={termOptions} onChange={(value) => update("term", value)} />
+        <SelectField
+          label="学年"
+          value={filters.academic_year}
+          options={yearOptions}
+          onChange={(value) => update("academic_year", value)}
+        />
+        <SelectField
+          label="学期"
+          value={filters.term}
+          options={termOptions}
+          onChange={(value) => update("term", value)}
+        />
         <SelectField
           label="课表"
           value={filters.schedule_type}

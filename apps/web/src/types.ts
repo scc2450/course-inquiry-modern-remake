@@ -13,6 +13,8 @@ export interface MetaResponse {
   departments: Option[];
   onlineCourseTypes: Option[];
   dataVersion: string;
+  defaultAcademicYear?: string;
+  defaultTerm?: string;
 }
 
 export interface CourseItem {

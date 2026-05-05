@@ -39,4 +39,8 @@ def test_metadata_contains_facets(tmp_path: Path) -> None:
     meta = metadata(settings)
 
     assert "24-25" in meta.academicYears
+    assert "98-99" in meta.academicYears
+    assert {"1", "2", "3"}.issubset(set(meta.terms))
+    assert meta.defaultAcademicYear == "24-25"
+    assert meta.defaultTerm == "2"
     assert any(option.id == "YJSKB" for option in meta.scheduleTypes)

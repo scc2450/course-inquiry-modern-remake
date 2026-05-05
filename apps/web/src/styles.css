@@ -68,6 +68,7 @@ button:disabled,
   gap: 20px;
   justify-content: space-between;
   margin-bottom: 24px;
+  min-width: 0;
 }
 
 .eyebrow {
@@ -109,8 +110,12 @@ h1 {
   align-items: end;
   display: grid;
   gap: 14px;
-  grid-template-columns: minmax(220px, 2fr) minmax(180px, 1.3fr) repeat(5, minmax(132px, 1fr)) auto;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 176px), 1fr));
   margin-bottom: 18px;
+}
+
+.filters > .field:first-child {
+  grid-column: span 2;
 }
 
 .field {
@@ -147,8 +152,15 @@ h1 {
 }
 
 .actions {
-  display: flex;
+  display: grid;
   gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-width: 0;
+}
+
+.actions button,
+.actions .buttonLike {
+  min-width: 0;
 }
 
 .primary {
@@ -167,6 +179,7 @@ h1 {
   border-bottom: 1px solid #ded7cd;
   border-top: 1px solid #ded7cd;
   display: flex;
+  gap: 16px;
   justify-content: space-between;
   margin-bottom: 0;
   padding: 12px 0;
@@ -175,6 +188,8 @@ h1 {
 .status {
   color: #3d3832;
   font-size: 14px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .status.muted {
@@ -188,6 +203,7 @@ h1 {
 .pageSize {
   align-items: center;
   display: flex;
+  flex-shrink: 0;
   gap: 8px;
 }
 
@@ -297,13 +313,19 @@ td:nth-child(8) {
   font-size: 14px;
 }
 
-@media (max-width: 1180px) {
+@media (min-width: 1420px) {
   .filters {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(220px, 2fr) minmax(180px, 1.3fr) repeat(5, minmax(120px, 1fr)) minmax(232px, auto);
   }
 
   .actions {
-    grid-column: 1 / -1;
+    display: flex;
+  }
+}
+
+@media (max-width: 820px) {
+  .filters > .field:first-child {
+    grid-column: span 1;
   }
 }
 
@@ -327,7 +349,6 @@ td:nth-child(8) {
   }
 
   .actions {
-    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 

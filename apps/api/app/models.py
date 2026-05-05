@@ -61,3 +61,5 @@ class MetaResponse(BaseModel):
     departments: List[Option]
     onlineCourseTypes: List[Option]
     dataVersion: str
+    defaultAcademicYear: str = "all"
+    defaultTerm: str = "all"

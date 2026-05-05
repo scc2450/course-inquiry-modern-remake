@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import io
 import sqlite3
+from datetime import date
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
@@ -40,6 +41,10 @@ TERM_LABELS = {
     "2": "春季",
     "3": "暑校",
 }
+
+UPSTREAM_EARLIEST_YEAR_START = 1998
+UPSTREAM_LATEST_YEAR_START = 2024
+SUPPORTED_TERMS = ["1", "2", "3"]
 
 
 def ensure_database(settings: Settings) -> None:
@@ -132,6 +137,55 @@ def _distinct(conn: sqlite3.Connection, column: str) -> List[str]:
     return [row["value"] for row in rows]
 
 
+def _format_academic_year(start_year: int) -> str:
+    return "{:02d}-{:02d}".format(start_year % 100, (start_year + 1) % 100)
+
+
+def _parse_academic_year_start(value: str) -> int:
+    try:
+        start = int(value.split("-", 1)[0])
+    except (ValueError, IndexError):
+        return -1
+    return 1900 + start if start >= 80 else 2000 + start
+
+
+def _current_academic_year_start() -> int:
+    today = date.today()
+    return today.year if today.month >= 8 else today.year - 1
+
+
+def _supported_academic_years() -> List[str]:
+    latest_start = max(UPSTREAM_LATEST_YEAR_START, _current_academic_year_start())
+    return [
+        _format_academic_year(start_year)
+        for start_year in range(latest_start, UPSTREAM_EARLIEST_YEAR_START - 1, -1)
+    ]
+
+
+def _merge_academic_years(values: Iterable[str]) -> List[str]:
+    years = {value for value in values if value}
+    years.update(_supported_academic_years())
+    return sorted(years, key=_parse_academic_year_start, reverse=True)
+
+
+def _merge_terms(values: Iterable[str]) -> List[str]:
+    terms = {value for value in values if value}
+    terms.update(SUPPORTED_TERMS)
+    return sorted(terms, key=lambda term: (term not in SUPPORTED_TERMS, term))
+
+
+def _default_year(values: List[str]) -> str:
+    if not values:
+        return "all"
+    return sorted(values, key=_parse_academic_year_start, reverse=True)[0]
+
+
+def _default_term(values: List[str]) -> str:
+    if "2" in values:
+        return "2"
+    return _merge_terms(values)[0] if values else "all"
+
+
 def _options(values: Iterable[str], labels: Optional[Dict[str, str]] = None) -> List[Option]:
     labels = labels or {}
     options = [Option(id="all", name="全部")]
@@ -142,8 +196,10 @@ def _options(values: Iterable[str], labels: Optional[Dict[str, str]] = None) -> 
 def metadata(settings: Settings) -> MetaResponse:
     ensure_database(settings)
     with _connect(settings.database_path) as conn:
-        years = sorted(_distinct(conn, "academic_year"), reverse=True)
-        terms = _distinct(conn, "term")
+        data_years = _distinct(conn, "academic_year")
+        data_terms = _distinct(conn, "term")
+        years = _merge_academic_years(data_years)
+        terms = _merge_terms(data_terms)
         schedule_types = _distinct(conn, "schedule_type")
         course_types = _distinct(conn, "course_type")
         department_ids = _distinct(conn, "department_id")
@@ -166,6 +222,8 @@ def metadata(settings: Settings) -> MetaResponse:
             Option(id="3-英文", name="英语授课"),
         ],
         dataVersion=version,
+        defaultAcademicYear=_default_year(data_years),
+        defaultTerm=_default_term(data_terms),
     )
 
 

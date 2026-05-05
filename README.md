@@ -11,7 +11,8 @@
 ## 本地启动
 
 ```bash
-cd /Users/erik/Documents/Sandbox/course-inquiry-modern
+git clone git@github.com:scc2450/course-inquiry-modern-remake.git
+cd course-inquiry-modern-remake
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -e apps/api
@@ -21,7 +22,7 @@ uvicorn app.main:app --app-dir apps/api --reload --port 8000
 另开一个终端：
 
 ```bash
-cd /Users/erik/Documents/Sandbox/course-inquiry-modern/apps/web
+cd course-inquiry-modern-remake/apps/web
 npm install
 npm run dev
 ```
@@ -33,7 +34,7 @@ npm run dev
 仓库默认只放一小份样例 CSV，方便无网络启动。要拉取原始仓库中的完整离线 CSV：
 
 ```bash
-cd /Users/erik/Documents/Sandbox/course-inquiry-modern
+cd course-inquiry-modern-remake
 . .venv/bin/activate
 python apps/api/scripts/sync_upstream_data.py
 python apps/api/scripts/build_index.py
