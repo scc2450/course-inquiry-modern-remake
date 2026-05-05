@@ -78,6 +78,104 @@ function TextField({
   );
 }
 
+function AcademicYearField({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: Option[];
+  onChange: (value: string) => void;
+}) {
+  const years = options.map((option) => option.id).filter((id) => id !== "all");
+  const selectedIndex = years.indexOf(value);
+  const activeIndex = selectedIndex >= 0 ? selectedIndex : 0;
+  const selectedLabel = value === "all" ? "全部学年" : value;
+  const canStepOlder = activeIndex < years.length - 1;
+  const canStepNewer = activeIndex > 0;
+
+  const pickByIndex = (index: number) => {
+    const nextYear = years[index];
+    if (nextYear) onChange(nextYear);
+  };
+
+  return (
+    <div className="field yearField">
+      <span>学年</span>
+      <div className="yearPicker">
+        <button
+          type="button"
+          className={value === "all" ? "yearAll active" : "yearAll"}
+          onClick={() => onChange("all")}
+        >
+          全部
+        </button>
+        <div className="yearStepper">
+          <button
+            type="button"
+            aria-label="选择更早学年"
+            disabled={!canStepOlder}
+            onClick={() => pickByIndex(activeIndex + 1)}
+          >
+            ‹
+          </button>
+          <strong>{selectedLabel}</strong>
+          <button
+            type="button"
+            aria-label="选择更新学年"
+            disabled={!canStepNewer}
+            onClick={() => pickByIndex(activeIndex - 1)}
+          >
+            ›
+          </button>
+        </div>
+        <input
+          aria-label="学年快速选择"
+          className="yearRange"
+          type="range"
+          min="0"
+          max={Math.max(years.length - 1, 0)}
+          step="1"
+          value={activeIndex}
+          onChange={(event) => pickByIndex(Number(event.target.value))}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SegmentedField({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: Option[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="field segmentedField">
+      <span>{label}</span>
+      <div className="segmentedOptions" role="radiogroup" aria-label={label}>
+        {options.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            role="radio"
+            aria-checked={value === option.id}
+            className={value === option.id ? "active" : ""}
+            onClick={() => onChange(option.id)}
+          >
+            {option.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function StatusLine({
   response,
   loading,
@@ -262,13 +360,12 @@ export function App() {
           placeholder="教师姓名"
           onChange={(value) => update("teacher", value)}
         />
-        <SelectField
-          label="学年"
+        <AcademicYearField
           value={filters.academic_year}
           options={yearOptions}
           onChange={(value) => update("academic_year", value)}
         />
-        <SelectField
+        <SegmentedField
           label="学期"
           value={filters.term}
           options={termOptions}

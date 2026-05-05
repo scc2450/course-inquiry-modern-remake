@@ -118,6 +118,10 @@ h1 {
   grid-column: span 2;
 }
 
+.yearField {
+  grid-column: span 2;
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -149,6 +153,82 @@ h1 {
   border-color: #287f76;
   box-shadow: 0 0 0 3px rgb(40 127 118 / 16%);
   outline: none;
+}
+
+.yearPicker {
+  background: #ffffff;
+  border: 1px solid #d6d0c7;
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  grid-template-columns: 76px minmax(0, 1fr);
+  min-width: 0;
+  padding: 7px;
+}
+
+.yearAll,
+.yearStepper button,
+.segmentedOptions button {
+  height: 36px;
+  padding-inline: 10px;
+}
+
+.yearAll {
+  width: 100%;
+}
+
+.yearAll.active,
+.segmentedOptions button.active {
+  background: #f3e3d4;
+  border-color: #b54b35;
+  color: #7f2d22;
+}
+
+.yearStepper {
+  align-items: center;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  min-width: 0;
+}
+
+.yearStepper button {
+  font-size: 20px;
+  padding: 0;
+}
+
+.yearStepper strong {
+  color: #2d2925;
+  font-size: 15px;
+  font-weight: 680;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yearRange {
+  accent-color: #9f3a2b;
+  grid-column: 1 / -1;
+  height: 18px;
+  padding: 0;
+  width: 100%;
+}
+
+.segmentedOptions {
+  background: #ebe4d9;
+  border: 1px solid #d8cfc2;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 4px;
+}
+
+.segmentedOptions button {
+  background: transparent;
+  border-color: transparent;
+  min-width: 0;
 }
 
 .actions {
@@ -324,7 +404,8 @@ td:nth-child(8) {
 }
 
 @media (max-width: 820px) {
-  .filters > .field:first-child {
+  .filters > .field:first-child,
+  .yearField {
     grid-column: span 1;
   }
 }
@@ -355,6 +436,10 @@ td:nth-child(8) {
   button,
   .buttonLike {
     padding-inline: 10px;
+  }
+
+  .segmentedOptions button {
+    padding-inline: 6px;
   }
 
   .pager {
