@@ -11,13 +11,13 @@ import { exportUrl, fetchMeta, searchCourses } from "./lib/api";
 import type { CourseItem, CourseSearchResponse, Filters, MetaResponse, Option, Source } from "./types";
 
 const DEFAULT_FILTERS: Filters = {
-  source: "offline",
+  source: "online",
   keyword: "",
   teacher: "",
   academic_year: "all",
   term: "all",
-  schedule_type: "all",
-  course_type: "all",
+  schedule_type: "BKSKB",
+  course_type: "0",
   department_id: "all",
   page: 1,
   page_size: 25,
@@ -30,7 +30,7 @@ const TERM_LABELS: Record<string, string> = {
 };
 
 function optionLabel(option: Option): string {
-  if (option.id === "all") return option.name;
+  if (option.id === "all" || option.name === "全部") return option.name;
   return option.name === option.id ? option.id : `${option.name} · ${option.id}`;
 }
 
@@ -230,6 +230,89 @@ function SegmentedField({
   );
 }
 
+function DepartmentField({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: Option[];
+  onChange: (value: string) => void;
+}) {
+  const selected = options.find((option) => option.id === value) ?? options[0] ?? { id: "all", name: "全部" };
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleOptions = (normalizedQuery
+    ? options.filter(
+        (option) =>
+          option.name.toLowerCase().includes(normalizedQuery) || option.id.toLowerCase().includes(normalizedQuery),
+      )
+    : options
+  ).slice(0, 10);
+
+  const choose = (option: Option) => {
+    onChange(option.id);
+    setQuery("");
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="field departmentField">
+      <span>院系</span>
+      <div className="comboBox">
+        <input
+          aria-label="院系"
+          aria-expanded={isOpen}
+          className="comboInput"
+          placeholder={selected.name}
+          value={isOpen ? query : selected.name}
+          onBlur={() => setIsOpen(false)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => {
+            setQuery("");
+            setIsOpen(true);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && visibleOptions[0]) {
+              event.preventDefault();
+              choose(visibleOptions[0]);
+            }
+            if (event.key === "Escape") {
+              setQuery("");
+              setIsOpen(false);
+            }
+          }}
+        />
+        {isOpen ? (
+          <div className="comboPanel" role="listbox" aria-label="院系候选">
+            {visibleOptions.length > 0 ? (
+              visibleOptions.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="option"
+                  aria-selected={option.id === value}
+                  className={option.id === value ? "active" : ""}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => choose(option)}
+                >
+                  <span>{option.name}</span>
+                </button>
+              ))
+            ) : (
+              <div className="comboEmpty">没有匹配院系</div>
+            )}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function StatusLine({
   response,
   loading,
@@ -318,6 +401,8 @@ export function App() {
           ...current,
           academic_year: nextMeta.defaultAcademicYear ?? nextMeta.academicYears[0] ?? "all",
           term: nextMeta.defaultTerm ?? (nextMeta.terms.includes("2") ? "2" : nextMeta.terms[0] ?? "all"),
+          course_type: current.source === "online" ? "0" : current.course_type,
+          schedule_type: current.source === "online" ? "BKSKB" : current.schedule_type,
         }));
       })
       .catch((nextError: Error) => setError(nextError.message));
@@ -437,12 +522,10 @@ export function App() {
           options={courseTypeOptions ?? [{ id: "all", name: "全部" }]}
           onChange={(value) => update("course_type", value)}
         />
-        <SelectField
-          label="院系"
+        <DepartmentField
           value={filters.department_id}
           options={meta?.departments ?? [{ id: "all", name: "全部" }]}
           onChange={(value) => update("department_id", value)}
-          formatOption={(option) => option.name}
         />
         <div className="actions">
           <button className="primary" type="submit" disabled={loading}>
