@@ -11,8 +11,8 @@
   --control: #f8fcff;
   --ink: #173042;
   --muted: #5d6b76;
-  --primary: #e9543d;
-  --primary-dark: #c63f31;
+  --primary: #0f8f8c;
+  --primary-dark: #0a6d72;
   --surface: #ffffff;
   --surface-tint: #eaf7ef;
   --teal: #0f8f8c;
@@ -174,96 +174,60 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 8px;
   display: grid;
-  gap: 8px;
-  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 6px;
+  grid-template-columns: 68px minmax(82px, 1fr) 72px;
   min-width: 0;
-  padding: 7px;
+  padding: 0;
 }
 
 .yearAll,
-.yearTrigger,
-.yearGroupTabs button,
-.yearGrid button,
 .segmentedOptions button {
-  height: 36px;
+  height: 40px;
   padding-inline: 10px;
 }
 
 .yearAll {
+  border-color: transparent;
+  border-radius: 7px 0 0 7px;
   width: 100%;
 }
 
 .yearAll.active,
-.yearGrid button.active,
 .segmentedOptions button.active {
-  background: #ffe2d8;
+  background: #dff6ef;
   border-color: var(--primary);
-  color: #9f2d21;
+  color: var(--primary-dark);
 }
 
-.yearTrigger {
+.yearStartInput {
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--border-soft);
+  border-radius: 0;
+  height: 40px;
+  padding-inline: 10px;
+}
+
+.yearStartInput:focus {
+  border-color: var(--teal);
+  box-shadow: inset 3px 0 0 rgb(15 143 140 / 26%);
+  outline: none;
+}
+
+.yearPreview {
   align-items: center;
   background: #eef9f6;
-  border-color: #acd7d3;
-  display: flex;
-  justify-content: space-between;
-  min-width: 0;
-  width: 100%;
-}
-
-.yearTrigger[aria-expanded="true"] {
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgb(15 143 140 / 14%);
-}
-
-.yearTrigger strong {
+  border-left: 1px solid var(--border-soft);
+  border-radius: 0 7px 7px 0;
   color: var(--ink);
+  display: flex;
   font-size: 15px;
   font-weight: 680;
+  justify-content: center;
   overflow: hidden;
+  padding-inline: 8px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.yearTrigger span {
-  color: var(--teal);
-  flex-shrink: 0;
-  font-size: 12px;
-}
-
-.yearPanel {
-  grid-column: 1 / -1;
-  display: grid;
-  gap: 9px;
-}
-
-.yearGroupTabs {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-}
-
-.yearGroupTabs button {
-  background: #f4faf6;
-  border-color: var(--border-soft);
-  flex: 0 0 auto;
-}
-
-.yearGroupTabs button.active {
-  background: #dff6ef;
-  border-color: var(--teal);
-  color: #0b6c68;
-}
-
-.yearGrid {
-  display: grid;
-  gap: 6px;
-  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
-}
-
-.yearGrid button {
-  background: var(--control);
 }
 
 .segmentedOptions {

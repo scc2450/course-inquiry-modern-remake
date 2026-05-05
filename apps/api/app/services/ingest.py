@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import sqlite3
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Iterable, Iterator, List, Optional
 
@@ -85,7 +86,8 @@ def iter_courses(csv_files: Iterable[Path]) -> Iterator[dict]:
 def build_database(raw_data_dir: Path, sample_csv_path: Path, database_path: Path) -> ImportStats:
     database_path.parent.mkdir(parents=True, exist_ok=True)
     csv_files = discover_csv_files(raw_data_dir, sample_csv_path)
-    data_version = max(path.stat().st_mtime for path in csv_files) if csv_files else 0
+    data_timestamp = max(path.stat().st_mtime for path in csv_files) if csv_files else 0
+    data_version = datetime.fromtimestamp(data_timestamp).isoformat(timespec="seconds") if data_timestamp else "unknown"
 
     with sqlite3.connect(database_path) as conn:
         conn.execute("PRAGMA journal_mode=WAL")
@@ -143,7 +145,7 @@ def build_database(raw_data_dir: Path, sample_csv_path: Path, database_path: Pat
         conn.execute("CREATE INDEX idx_courses_name ON courses (course_name)")
         conn.execute(
             "INSERT INTO metadata (key, value) VALUES (?, ?)",
-            ("data_version", str(int(data_version))),
+            ("data_version", data_version),
         )
         conn.execute(
             "INSERT INTO metadata (key, value) VALUES (?, ?)",
@@ -155,5 +157,5 @@ def build_database(raw_data_dir: Path, sample_csv_path: Path, database_path: Pat
         database_path=database_path,
         source_files=len(csv_files),
         rows=rows,
-        data_version=str(int(data_version)),
+        data_version=data_version,
     )

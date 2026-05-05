@@ -29,12 +29,6 @@ const TERM_LABELS: Record<string, string> = {
   "3": "暑校",
 };
 
-interface YearGroup {
-  id: string;
-  name: string;
-  years: string[];
-}
-
 function optionLabel(option: Option): string {
   if (option.id === "all") return option.name;
   return option.name === option.id ? option.id : `${option.name} · ${option.id}`;
@@ -46,22 +40,47 @@ function parseAcademicYearStart(value: string): number {
   return start >= 80 ? 1900 + start : 2000 + start;
 }
 
-function groupAcademicYears(years: string[]): YearGroup[] {
-  const grouped = new Map<string, string[]>();
-  years.forEach((year) => {
-    const start = parseAcademicYearStart(year);
-    if (start < 0) return;
-    const decade = Math.floor(start / 10) * 10;
-    const key = String(decade);
-    grouped.set(key, [...(grouped.get(key) ?? []), year]);
-  });
-  return [...grouped.entries()]
-    .sort(([left], [right]) => Number(right) - Number(left))
-    .map(([decade, groupYears]) => ({ id: decade, name: `${decade}年代`, years: groupYears }));
+function formatAcademicYear(startYear: number): string {
+  const start = String(startYear % 100).padStart(2, "0");
+  const end = String((startYear + 1) % 100).padStart(2, "0");
+  return `${start}-${end}`;
 }
 
-function groupForYear(year: string, groups: YearGroup[]): string {
-  return groups.find((group) => group.years.includes(year))?.id ?? groups[0]?.id ?? "";
+function normalizeYearInput(value: string, years: string[]): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  let startYear = Number(trimmed);
+  if (!Number.isInteger(startYear)) return null;
+  if (trimmed.length <= 2) {
+    startYear = startYear >= 80 ? 1900 + startYear : 2000 + startYear;
+  }
+  const normalized = formatAcademicYear(startYear);
+  return years.includes(normalized) ? normalized : null;
+}
+
+function yearStartInputValue(value: string): string {
+  const startYear = parseAcademicYearStart(value);
+  return startYear >= 0 ? String(startYear) : "";
+}
+
+function formatDataVersion(version: string): string {
+  if (version === "live") return "实时数据";
+  const numericVersion = Number(version);
+  const date =
+    /^\d+$/.test(version) && Number.isFinite(numericVersion)
+      ? new Date(numericVersion * 1000)
+      : new Date(version);
+  if (!Number.isNaN(date.getTime())) {
+    return `更新 ${date.toLocaleString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })}`;
+  }
+  return `版本 ${version}`;
 }
 
 function SelectField({
@@ -120,21 +139,21 @@ function AcademicYearField({
   onChange: (value: string) => void;
 }) {
   const years = options.map((option) => option.id).filter((id) => id !== "all");
-  const groups = useMemo(() => groupAcademicYears(years), [years]);
-  const selectedGroupId = groupForYear(value, groups);
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeGroupId, setActiveGroupId] = useState(selectedGroupId);
+  const [draftStartYear, setDraftStartYear] = useState(yearStartInputValue(value));
   const selectedLabel = value === "all" ? "全部学年" : value;
-  const selectedGroup = groups.find((group) => group.id === selectedGroupId);
-  const activeGroup = groups.find((group) => group.id === activeGroupId) ?? groups[0];
+  const inputId = "academic-year-starts";
 
   useEffect(() => {
-    if (selectedGroupId) setActiveGroupId(selectedGroupId);
-  }, [selectedGroupId]);
+    setDraftStartYear(yearStartInputValue(value));
+  }, [value]);
 
-  const pickYear = (nextYear: string) => {
-    onChange(nextYear);
-    setIsOpen(false);
+  const commitDraft = () => {
+    const nextYear = normalizeYearInput(draftStartYear, years);
+    if (nextYear) {
+      onChange(nextYear);
+      return;
+    }
+    setDraftStartYear(yearStartInputValue(value));
   };
 
   return (
@@ -146,51 +165,34 @@ function AcademicYearField({
           className={value === "all" ? "yearAll active" : "yearAll"}
           onClick={() => {
             onChange("all");
-            setIsOpen(false);
           }}
         >
           全部
         </button>
-        <button
-          type="button"
-          className="yearTrigger"
-          aria-expanded={isOpen}
-          aria-controls="academic-year-panel"
-          onClick={() => setIsOpen((open) => !open)}
-        >
-          <strong>{selectedLabel}</strong>
-          <span>{value === "all" ? "不限范围" : `${selectedGroup?.name ?? ""}`}</span>
-        </button>
-        {isOpen ? (
-          <div className="yearPanel" id="academic-year-panel">
-            <div className="yearGroupTabs" role="tablist" aria-label="学年年代">
-              {groups.map((group) => (
-                <button
-                  key={group.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={group.id === activeGroup?.id}
-                  className={group.id === activeGroup?.id ? "active" : ""}
-                  onClick={() => setActiveGroupId(group.id)}
-                >
-                  {group.name}
-                </button>
-              ))}
-            </div>
-            <div className="yearGrid">
-              {activeGroup?.years.map((year) => (
-                <button
-                  key={year}
-                  type="button"
-                  className={value === year ? "active" : ""}
-                  onClick={() => pickYear(year)}
-                >
-                  {year}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
+        <input
+          aria-label="学年起始年份"
+          className="yearStartInput"
+          inputMode="numeric"
+          list={inputId}
+          placeholder="2024"
+          value={draftStartYear}
+          onBlur={commitDraft}
+          onChange={(event) => setDraftStartYear(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              commitDraft();
+            }
+          }}
+        />
+        <strong className="yearPreview">{selectedLabel}</strong>
+        <datalist id={inputId}>
+          {years.map((year) => (
+            <option key={year} value={parseAcademicYearStart(year)}>
+              {year}
+            </option>
+          ))}
+        </datalist>
       </div>
     </div>
   );
@@ -242,7 +244,7 @@ function StatusLine({
   if (!response) return <span className="status muted">等待查询</span>;
   return (
     <span className="status">
-      共 {response.total} 条 · 第 {response.page} 页 · 数据 {response.dataVersion}
+      共 {response.total} 条 · 第 {response.page} 页 · {formatDataVersion(response.dataVersion)}
     </span>
   );
 }
