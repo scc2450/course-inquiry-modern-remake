@@ -1,0 +1,1 @@
+"""Course inquiry API package."""

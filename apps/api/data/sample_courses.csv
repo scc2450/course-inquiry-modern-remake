@@ -1,0 +1,9 @@
+classNo,courseId,courseName,courseType,credits,remark,scheduleTime,scheduleWeek,teacher,url,学年,学期,课表类型,开课系所
+1,bkkc201600294437,贝叶斯理论与算法,任选,3,,周三7-8单，周一3-4,1-16,张成(助理教授),http://sims.pku.edu.cn/bkxjTeaching/edu/pku/stu/teaching/bkxj/jpf/courseBK/getCourseDetail.do?course_seq_no=bkkc201600294437&kclx=BK,24-25,2,BKSKB,00001
+1,bkkc201900445940,现代数学物理选讲,任选,3,,周四5-6，周二3-4双,1-16,Emanuel Gilbert Scheidegger(副教授),http://sims.pku.edu.cn/bkxjTeaching/edu/pku/stu/teaching/bkxj/jpf/courseBK/getCourseDetail.do?course_seq_no=bkkc201900445940&kclx=BK,24-25,2,BKSKB,00001
+1,BKC00130200AT0000056,数学模型,专业必修,3,,周三1-2双，周一7-8,1-16,李若(教授),http://sims.pku.edu.cn/bkxjTeaching/edu/pku/stu/teaching/bkxj/jpf/courseBK/getCourseDetail.do?course_seq_no=BKC00130200AT0000056&kclx=BK,24-25,2,BKSKB,00001
+1,bkkc202400636270,理论机器学习,任选,3,,周三7-8双，周一7-8,1-16,张志华(教授),http://sims.pku.edu.cn/bkxjTeaching/edu/pku/stu/teaching/bkxj/jpf/courseBK/getCourseDetail.do?course_seq_no=bkkc202400636270&kclx=BK,24-25,2,BKSKB,00001
+00,yjkc20160900021782,贝叶斯理论与算法,选修,3,,周三7-8单 二教501，周一3-4 二教501,1-16,张成(助理教授),http://sims.pku.edu.cn/bkxjTeaching/edu/pku/stu/teaching/bkxj/jpf/courseBK/getCourseDetail.do?course_seq_no=yjkc20160900021782&kclx=YJ,24-25,2,YJSKB,00001
+00,yjkc20211100041903,理论机器学习,选修,3,本课只限数学学院和计算机学院博士生选修,周三7-8双 二教302，周一7-8 二教302,1-16,张志华(教授),http://sims.pku.edu.cn/bkxjTeaching/edu/pku/stu/teaching/bkxj/jpf/courseBK/getCourseDetail.do?course_seq_no=yjkc20211100041903&kclx=YJ,24-25,2,YJSKB,00001
+1,bkkc202200568625,大气环境模型与数据分析,专业必修,2,,周四5-6,1-16,王雪松(副教授),http://sims.pku.edu.cn/bkxjTeaching/edu/pku/stu/teaching/bkxj/jpf/courseBK/getCourseDetail.do?course_seq_no=bkkc202200568625&kclx=BK,24-25,2,BKSKB,00127
+00,yjkc20241000055781,AI for Science前沿讲座,选修,1,,周四7-8双 二教407,1-16,赵晓续(助理教授),http://sims.pku.edu.cn/bkxjTeaching/edu/pku/stu/teaching/bkxj/jpf/courseBK/getCourseDetail.do?course_seq_no=yjkc20241000055781&kclx=YJ,24-25,2,YJSKB,00232
